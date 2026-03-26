@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Solar System</title>
+
+  <!-- 🔥 THIS IS THE MISSING PART -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+
+</head>
+<body>
+
+<script>
+
+let planets = [];
+let day = 0;
+let speed = 100;
+let zoom = 1;
+let targetZoom = 1;
+let camX = 0;
+let camY = 0;
+let targetCamX = 0;
+let targetCamY = 0;
+let selectedPlanet = null;
+
+function setup() {
+  createCanvas(1000, 800);
+  planets = [
+    { name: "Mercury", dist: 60, size: 4, period: 88, col: [200,200,200] },
+    { name: "Venus", dist: 90, size: 7, period: 225, col: [255,180,100] },
+    { name: "Earth", dist: 120, size: 10, period: 365, col: [100,150,255] },
+    { name: "Mars", dist: 150, size: 6, period: 687, col: [255,100,80] },
+    { name: "Jupiter", dist: 220, size: 20, period: 4333, col: [255,200,150] },
+    { name: "Saturn", dist: 280, size: 18, period: 10759, col: [255,220,150] },
+    { name: "Uranus", dist: 340, size: 14, period: 30687, col: [150,255,255] },
+    { name: "Neptune", dist: 400, size: 14, period: 60190, col: [100,150,255] }
+  ];
+}
+
+function draw() {
+  background(0);
+
+  day += deltaTime / speed;
+  let cx = width/2;
+  let cy = height/2;
+
+  zoom = lerp(zoom, targetZoom, 0.08);
+  camX = lerp(camX, targetCamX, 0.08);
+  camY = lerp(camY, targetCamY, 0.08);
+
+  push();
+  translate(width/2, height/2);
+  scale(zoom);
+  translate(-camX, -camY);
+
+  fill(255, 200, 50);
+  noStroke();
+  ellipse(cx, cy, 40);
+
+  for (let p of planets) {
+    let angle = TWO_PI * (day / p.period);
+    let x = cx + cos(angle) * p.dist;
+    let y = cy + sin(angle) * p.dist;
+    p.screenX = x;
+    p.screenY = y;
+
+    noFill();
+    stroke(60);
+    ellipse(cx, cy, p.dist * 2);
+
+    if (p.name === "Earth") {
+      drawEarth(x, y, p.size * 2, angle);
+    } else {
+      fill(p.col);
+      noStroke();
+      ellipse(x, y, p.size);
+    }
+
+    if (p.name === "Saturn") {
+      noFill();
+      stroke(200);
+      ellipse(x, y, p.size * 2.2, p.size);
+    }
+  }
+  pop();
+
+  fill(255);
+  textSize(16);
+  text("Day: " + floor(day), 20, 30);
+  text("Speed: " + speed.toFixed(0), 20, 50);
+  if (selectedPlanet) {
+    text("Viewing: " + selectedPlanet.name, 20, 70);
+  }
+}
+
+function drawEarth(x, y, size, angle) {
+  push();
+  translate(x, y);
+
+  noStroke();
+  fill(40, 90, 200);
+  ellipse(0, 0, size);
+
+  fill(60, 140, 80);
+  for (let i = 0; i < 25; i++) {
+    let a = i * 0.25 + angle * 0.5;
+    let r = size * 0.35;
+    let px = cos(a) * r;
+    let py = sin(a) * r;
+    ellipse(px, py, size * 0.18, size * 0.1);
+  }
+
+  fill(255, 255, 255, 80);
+  for (let i = 0; i < 12; i++) {
+    let a = i + frameCount * 0.01;
+    let px = cos(a) * size * 0.4;
+    let py = sin(a) * size * 0.4;
+    ellipse(px, py, size * 0.25, size * 0.1);
+  }
+
+  fill(0, 150);
+  arc(0, 0, size, size, -HALF_PI, HALF_PI);
+  pop();
+}
+
+function mousePressed() {
+  let cx = width/2;
+  let cy = height/2;
+  let mx = (mouseX - width/2) / zoom + camX;
+  let my = (mouseY - height/2) / zoom + camY;
+
+  for (let p of planets) {
+    let d = dist(mx, my, p.screenX, p.screenY);
+    if (d < p.size + 5) {
+      if (selectedPlanet === p) {
+        selectedPlanet = null;
+        targetZoom = 1;
+        targetCamX = cx;
+        targetCamY = cy;
+      } else {
+        selectedPlanet = p;
+        targetZoom = 3.5;
+        targetCamX = p.screenX;
+        targetCamY = p.screenY;
+      }
+      return;
+    }
+  }
+  selectedPlanet = null;
+  targetZoom = 1;
+  targetCamX = cx;
+  targetCamY = cy;
+}
+
+function mouseWheel(event) {
+  speed += event.delta * 0.1;
+  speed = constrain(speed, 10, 500);
+  return false;
+}
+
+</script>
+
+</body>
+</html>
