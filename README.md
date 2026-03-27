@@ -18,9 +18,4 @@ p5.js
 🌐 Live Demo
 
 https://kiwi176.github.io/sim-solar-system/
-
-📸 Preview
-
-(Add screenshot here later if you want 👀)
-
 Made for fun and learning 🚀
